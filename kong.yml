@@ -1,0 +1,40 @@
+_format_version: "2.1"
+
+services:
+# Auth Service (Provides Token)
+- name: auth-service
+  url: http://auth-service:3001
+  routes:
+  - name: auth-login-route
+    paths:
+    - /api/auth/login
+    strip_path: false
+  - name: auth-user-route
+    paths:
+    - /api/users
+    strip_path: false
+
+# Product Service (Requires Protection and Public Access)
+- name: product-service
+  url: http://product-service:3002
+  routes:
+  - name: product-public-route
+    paths:
+    - /api/products
+    strip_path: false
+  - name: product-private-route
+    paths:
+    - /api/orders
+    strip_path: false
+    # Apply JWT Plugin for Private API
+    plugins:
+    - name: jwt
+      config:
+        claims_to_verify: ["exp"]
+        key_claim_name: "iss"
+
+consumers:
+# Declare consumer for application, this ID is for Kong identification
+- username: app-client-api
+  custom_id: testuser # MAPPING to 'username' claim in JWT
+
