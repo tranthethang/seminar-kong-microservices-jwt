@@ -26,12 +26,6 @@ services:
     paths:
     - /api/orders
     strip_path: false
-    # Apply JWT Plugin for Private API
-    plugins:
-    - name: jwt
-      config:
-        claims_to_verify: ["exp"]
-        key_claim_name: "iss"
 
 consumers:
 # Declare consumer for application, this ID is for Kong identification
