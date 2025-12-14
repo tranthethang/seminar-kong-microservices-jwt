@@ -15,7 +15,7 @@ This project showcases a practical implementation of microservices architecture 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Client Applications                      │
+│                      Client Applications                    │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                 ┌──────────▼──────────┐
@@ -23,16 +23,16 @@ This project showcases a practical implementation of microservices architecture 
                 │  (Port 8008 Proxy)  │
                 └──┬────────────────┬─┘
        ┌───────────┘                └──────────────┐
-       │                                          │
-   ┌───▼──────┐                          ┌───────▼───┐
+       │                                           │
+   ┌───▼──────┐                          ┌─────────▼──┐
    │ Auth Svc │                          │ Product Svc│
    │(Port 3001)                          │ (Port 3002)│
-   │          │                          │           │
-   │ ┌──────┐ │                          │ ┌────────┐│
-   │ │users │ │                          │ │products││
-   │ │  .db │ │                          │ │  .db   ││
-   │ └──────┘ │                          │ └────────┘│
-   └──────────┘                          └───────────┘
+   │          │                          │            │
+   │ ┌──────┐ │                          │ ┌─────────┐│
+   │ │users │ │                          │ │products ││
+   │ │  .db │ │                          │ │  .db    ││
+   │ └──────┘ │                          │ └─────────┘│
+   └──────────┘                          └────────────┘
 ```
 
 ## Key Features
@@ -51,6 +51,7 @@ This project showcases a practical implementation of microservices architecture 
 - **npm or pnpm**: Package manager
 
 ### Optional: For Local Testing Without Docker
+
 - Node.js 22 with npm
 - SQLite3 development libraries
 
@@ -63,6 +64,7 @@ docker-compose up --build
 ```
 
 This command:
+
 - Builds both microservices
 - Starts Kong API Gateway
 - Initializes SQLite databases with sample data
@@ -83,6 +85,7 @@ When successful, you'll see a JSON response with the product list.
 ### Authentication Service (via Kong)
 
 **Login Endpoint**
+
 ```bash
 curl -X POST http://localhost:8008/api/auth/login \
   -H "Content-Type: application/json" \
@@ -90,6 +93,7 @@ curl -X POST http://localhost:8008/api/auth/login \
 ```
 
 **Response:**
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIs...",
@@ -100,22 +104,25 @@ curl -X POST http://localhost:8008/api/auth/login \
 ### Product Service (via Kong)
 
 **Get All Products** (Public - No Auth Required)
+
 ```bash
 curl http://localhost:8008/api/products
 ```
 
 **Response:**
+
 ```json
 {
   "products": [
-    {"id": 1, "name": "Laptop", "price": 1200.00},
-    {"id": 2, "name": "Mouse", "price": 25.00}
+    { "id": 1, "name": "Laptop", "price": 1200.0 },
+    { "id": 2, "name": "Mouse", "price": 25.0 }
   ],
   "access": "PUBLIC"
 }
 ```
 
 **Create Order** (Protected - JWT Required)
+
 ```bash
 curl -X POST http://localhost:8008/api/orders \
   -H "Authorization: Bearer <TOKEN>" \
@@ -124,6 +131,7 @@ curl -X POST http://localhost:8008/api/orders \
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Order created successfully",
@@ -131,8 +139,8 @@ curl -X POST http://localhost:8008/api/orders \
     "product_id": 1,
     "product_name": "Laptop",
     "quantity": 2,
-    "unit_price": 1200.00,
-    "total_price": 2400.00
+    "unit_price": 1200.0,
+    "total_price": 2400.0
   },
   "user_info": {
     "id": "some-id",
@@ -162,14 +170,17 @@ npm test
 The integration tests validate:
 
 1. **Authentication Flow**
+
    - Login and token generation
    - Invalid username handling
 
 2. **Public Access**
+
    - Products endpoint accessible without auth
    - Correct product data returned
 
 3. **Protected Endpoints**
+
    - Orders endpoint rejects unauthenticated requests
    - Valid JWT token grants access
    - Consumer info passed by Kong
@@ -227,6 +238,7 @@ Runs on: `http://localhost:3002`
 ### Kong Configuration
 
 If running Kong separately:
+
 1. Install Kong 2.8.1
 2. Configure with `kong.yml` in DB-less mode
 3. Set environment variables:
@@ -244,6 +256,7 @@ If running Kong separately:
 Default JWT secret: `YOUR_GLOBAL_JWT_SECRET`
 
 To change, update the environment variable in:
+
 - `auth-service/index.js` (JWT_SECRET)
 - `kong.yml` (jwt plugin configuration)
 
@@ -282,6 +295,7 @@ To change, update the environment variable in:
 **Symptom**: `Connection refused` or `Cannot POST /api/auth/login`
 
 **Solution**: Wait for Kong startup (check logs):
+
 ```bash
 docker-compose logs kong
 ```
@@ -290,7 +304,8 @@ docker-compose logs kong
 
 **Symptom**: 401 Unauthorized on `/api/orders`
 
-**Solution**: 
+**Solution**:
+
 1. Ensure JWT_SECRET matches in auth service and kong.yml
 2. Verify token hasn't expired (1 hour expiry)
 3. Include `Authorization: Bearer <token>` header
@@ -300,6 +315,7 @@ docker-compose logs kong
 **Symptom**: Connection errors between Kong and microservices
 
 **Solution**:
+
 1. Check all containers are running: `docker-compose ps`
 2. Verify network: `docker network ls | grep kong-net`
 3. Restart services: `docker-compose down && docker-compose up --build`
